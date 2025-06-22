@@ -33,6 +33,7 @@
             this.btnOk = new System.Windows.Forms.Button();
             this.Cancel = new System.Windows.Forms.Button();
             this.txtUid = new System.Windows.Forms.TextBox();
+            this.existingTonies = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // label1
@@ -48,10 +49,10 @@
             // btnOk
             // 
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(66, 64);
+            this.btnOk.Location = new System.Drawing.Point(66, 94);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 2;
+            this.btnOk.TabIndex = 3;
             this.btnOk.Text = "Ok";
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
@@ -59,10 +60,10 @@
             // Cancel
             // 
             this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Cancel.Location = new System.Drawing.Point(162, 64);
+            this.Cancel.Location = new System.Drawing.Point(162, 94);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 23);
-            this.Cancel.TabIndex = 3;
+            this.Cancel.TabIndex = 4;
             this.Cancel.Text = "Cancel";
             this.Cancel.UseVisualStyleBackColor = true;
             this.Cancel.Click += new System.EventHandler(this.Cancel_Click);
@@ -80,13 +81,23 @@
             this.txtUid.TextChanged += new System.EventHandler(this.txtUid_TextChanged);
             this.txtUid.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtUid_KeyDown);
             // 
+            // existingTonies
+            // 
+            this.existingTonies.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.existingTonies.FormattingEnabled = true;
+            this.existingTonies.Location = new System.Drawing.Point(66, 67);
+            this.existingTonies.Name = "existingTonies";
+            this.existingTonies.Size = new System.Drawing.Size(171, 21);
+            this.existingTonies.TabIndex = 2;
+            // 
             // AskUIDForm
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.Cancel;
-            this.ClientSize = new System.Drawing.Size(296, 93);
+            this.ClientSize = new System.Drawing.Size(296, 123);
+            this.Controls.Add(this.existingTonies);
             this.Controls.Add(this.txtUid);
             this.Controls.Add(this.Cancel);
             this.Controls.Add(this.btnOk);
@@ -106,5 +117,6 @@
         private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.Button Cancel;
         private System.Windows.Forms.TextBox txtUid;
+        private System.Windows.Forms.ComboBox existingTonies;
     }
 }

@@ -37,6 +37,7 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recentDirectoriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nFCReaderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autodetectionEnabledToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -118,6 +119,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openDirectoryToolStripMenuItem,
+            this.recentDirectoriesToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -129,6 +131,13 @@
             this.openDirectoryToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
             this.openDirectoryToolStripMenuItem.Text = "&Open Directory";
             this.openDirectoryToolStripMenuItem.Click += new System.EventHandler(this.openDirectoryToolStripMenuItem_Click);
+            // 
+            // recentDirectoriesToolStripMenuItem
+            // 
+            this.recentDirectoriesToolStripMenuItem.Name = "recentDirectoriesToolStripMenuItem";
+            this.recentDirectoriesToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.recentDirectoriesToolStripMenuItem.Text = "&Recent directories";
+            this.recentDirectoriesToolStripMenuItem.DropDownOpening += new System.EventHandler(this.recentDirectoriesToolStripMenuItem_DropDownOpening);
             // 
             // exitToolStripMenuItem
             // 
@@ -641,6 +650,7 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openDirectoryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem recentDirectoriesToolStripMenuItem;
         private System.Windows.Forms.GroupBox grpCardContent;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.Button btnDelete;

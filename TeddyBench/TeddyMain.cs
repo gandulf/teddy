@@ -64,6 +64,9 @@ namespace TeddyBench
         private bool TrackMouseDown = false;
         private int TrackNewPosition = -1;
 
+        // Field for recent directories
+        private List<string> recentDirectories = new List<string>();
+
         public class ListViewTag
         {
             public string FileName;
@@ -250,6 +253,7 @@ namespace TeddyBench
                 }
                 catch (Exception e)
                 {
+                    ReportException("Writing customTonies.json", e);
                     return;
                 }
             }
@@ -298,6 +302,18 @@ namespace TeddyBench
             StatusBarTimer.Tick += (object sender, EventArgs e) => { UpdateStatusBar(); };
             StatusBarTimer.Interval = 250;
             StatusBarTimer.Start();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            LoadRecentDirectories();
+
+            // Beim Start das zuletzt verwendete Verzeichnis öffnen, falls vorhanden
+            if (recentDirectories.Count > 0)
+            {
+                OpenPath(recentDirectories[0]);
+            }
         }
 
         void SaveSettings()
@@ -764,11 +780,14 @@ namespace TeddyBench
 
         private void openDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog dlg = new FolderBrowserDialog();
-
-            if (dlg.ShowDialog() == DialogResult.OK)
+            using (var dlg = new FolderBrowserDialog())
             {
-                OpenPath(dlg.SelectedPath);
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    OpenPath(dlg.SelectedPath);
+                    AddRecentDirectory(dlg.SelectedPath);
+                    SaveRecentDirectories();
+                }
             }
         }
 
@@ -1146,7 +1165,7 @@ namespace TeddyBench
 
         private void AddFiles(string[] fileNames, uint id = uint.MaxValue)
         {
-            AskUIDForm ask = new AskUIDForm(RfidReader);
+            AskUIDForm ask = new AskUIDForm(RfidReader, TonieInfoCustom);
 
             if (ask.ShowDialog() == DialogResult.OK)
             {
@@ -1514,7 +1533,7 @@ namespace TeddyBench
                 var fi = new FileInfo(tag.FileName);
                 string oldUid = ReverseUid(fi.Directory.Name + fi.Name);
 
-                AskUIDForm dlg = new AskUIDForm(RfidReader);
+                AskUIDForm dlg = new AskUIDForm(RfidReader,TonieInfoCustom);
                 dlg.Uid = oldUid;
 
                 if (dlg.ShowDialog() == DialogResult.OK)
@@ -2476,6 +2495,56 @@ namespace TeddyBench
             {
                 LoadJson(true);
             }, "JSON Downloader").Start();
+        }
+
+        private void recentDirectoriesToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            recentDirectoriesToolStripMenuItem.DropDownItems.Clear();
+            foreach (var dir in recentDirectories)
+            {
+                var item = new ToolStripMenuItem(dir);
+                item.Click += (s, ev) => OpenDirectoryFromRecent(dir);
+                recentDirectoriesToolStripMenuItem.DropDownItems.Add(item);
+            }
+            if (recentDirectories.Count == 0)
+            {
+                var empty = new ToolStripMenuItem("(No recent directories)");
+                empty.Enabled = false;
+                recentDirectoriesToolStripMenuItem.DropDownItems.Add(empty);
+            }
+        }
+
+        private void OpenDirectoryFromRecent(string path)
+        {
+            OpenPath(path);
+            AddRecentDirectory(path);
+            SaveRecentDirectories();
+        }
+
+        private void AddRecentDirectory(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+            recentDirectories.Remove(path);
+            recentDirectories.Insert(0, path);
+            if (recentDirectories.Count > 5)
+                recentDirectories.RemoveAt(5);
+        }
+
+        private void LoadRecentDirectories()
+        {
+            var dirs = Properties.Settings.Default.RecentDirectories;
+            if (dirs != null)
+                recentDirectories = dirs.Cast<string>().ToList();
+
+            recentDirectoriesToolStripMenuItem_DropDownOpening(null, null);
+        }
+
+        private void SaveRecentDirectories()
+        {
+            Properties.Settings.Default.RecentDirectories = new System.Collections.Specialized.StringCollection();
+            Properties.Settings.Default.RecentDirectories.AddRange(recentDirectories.ToArray());
+            Properties.Settings.Default.Save();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
@@ -9,16 +10,33 @@ namespace TeddyBench
 {
     public partial class AskUIDForm : Form
     {
-        internal string Uid;
+        internal string Uid;        
         private RfidReaderBase RfidReader;
 
-        public AskUIDForm(RfidReaderBase rfidReader)
+        public AskUIDForm(RfidReaderBase rfidReader, Dictionary<string, string> customTonieInfos)
         {
             RfidReader = rfidReader;
             InitializeComponent();
             txtUid.Select();
             txtUid.Select(6, 10);
             txtUid_TextChanged(null, null);
+            
+            // Leere Option am Anfang hinzufügen
+            
+            if (customTonieInfos != null && customTonieInfos.Count > 0)
+            {
+                existingTonies.Enabled = true;
+                existingTonies.Items.Add("<Choose existing tonie>");
+                existingTonies.Items.AddRange(customTonieInfos.Values.ToArray());
+                existingTonies.SelectedIndex = 0;
+
+                // Eventhandler für Auswahl in ComboBox
+                existingTonies.SelectedIndexChanged += ExistingTonies_SelectedIndexChanged;
+            } else
+            {
+                existingTonies.Enabled = false;
+            }
+
 
             if (RfidReader != null)
             {
@@ -57,7 +75,8 @@ namespace TeddyBench
             {
                 RfidReader.UidFound -= RfidReaderBase_UidFound;
             }
-            Uid = txtUid.Text.ToUpper();
+
+            Uid = txtUid.Text.ToUpper();            
 
             base.OnClosing(e);
         }
@@ -68,9 +87,16 @@ namespace TeddyBench
             {
                 txtUid.Text = "E00403";
                 txtUid.Select(6, 1);
-            }
+            }            
 
-            if (txtUid.Text.Length != 16 || !txtUid.Text.All("0123456789abcdefABCDEF".Contains))
+            validateExistingUid();
+        }
+
+        private void validateExistingUid()
+        {
+            bool invalid = txtUid.Text.Length != 16 || !txtUid.Text.All("0123456789abcdefABCDEF".Contains);
+
+            if (invalid)
             {
                 txtUid.BackColor = Color.PaleVioletRed;
                 btnOk.Enabled = false;
@@ -98,6 +124,24 @@ namespace TeddyBench
         private void Cancel_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void ExistingTonies_SelectedIndexChanged(object sender, EventArgs e)
+        {           
+
+            if (existingTonies.SelectedIndex > 0)
+            {
+                string selectedText = existingTonies.Items[existingTonies.SelectedIndex].ToString();
+                // UID aus eckigen Klammern extrahieren
+                int start = selectedText.IndexOf('[');
+                int end = selectedText.IndexOf(']');
+                if (start >= 0 && end > start)
+                {                    
+                    txtUid.Text = selectedText.Substring(start + 1, end - start - 1).ToUpper();                    
+                }
+            }
+
+            validateExistingUid();
         }
     }
 }
