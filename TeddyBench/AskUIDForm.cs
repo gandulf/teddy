@@ -67,7 +67,7 @@ namespace TeddyBench
             txtUid.Select();
             txtUid.Select(6, 10);
             base.OnShown(e);
-        }
+        }        
 
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -83,6 +83,8 @@ namespace TeddyBench
 
         private void txtUid_TextChanged(object sender, EventArgs e)
         {
+            txtUid.Text = cleanHexInput(txtUid.Text);
+
             if (!txtUid.Text.StartsWith("E00403"))
             {
                 txtUid.Text = "E00403";
@@ -90,6 +92,30 @@ namespace TeddyBench
             }            
 
             validateExistingUid();
+        }
+
+        private void txtUidLE_TextChanged(object sender, EventArgs e)
+        {
+            txtUidLE.Text = cleanHexInput(txtUidLE.Text);
+
+            if (!txtUidLE.Text.EndsWith("0304E0"))
+            {
+                txtUidLE.Text = "0304E0";
+                txtUidLE.Select(0, 0);
+            }
+
+            validateExistingUidLE();
+        }
+
+        private void txtUidLE_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnOk.PerformClick();
+            } else
+            {
+                pasteCheck(sender, e);
+            }
         }
 
         private void validateExistingUid()
@@ -108,11 +134,109 @@ namespace TeddyBench
             }
         }
 
+        private void validateExistingUidLE()
+        {
+            bool invalid = txtUidLE.Text.Length != 16 || !txtUidLE.Text.All("0123456789abcdefABCDEF".Contains);
+
+            if (invalid)
+            {
+                txtUidLE.BackColor = Color.PaleVioletRed;
+                btnOk.Enabled = false;
+            }
+            else
+            {
+                txtUidLE.BackColor = Color.LightGreen;
+                btnOk.Enabled = true;
+
+                // take the value from textUidLE and convert it to little-endian format and set the value in textUid
+                // Wert aus txtUidLE nehmen, in 8 Bytes aufteilen, umkehren und als txtUid setzen
+                txtUid.Text = convertEndianToHex(txtUidLE.Text);
+            }
+        }
+
+        private string convertEndianToHex(string le)
+        {
+            if (le.Length == 16)
+            {
+                var bytes = Enumerable.Range(0, 8)
+                    .Select(i => le.Substring(i * 2, 2))
+                    .Reverse()
+                    .ToArray();
+                return string.Concat(bytes).ToUpper();
+            }
+            return string.Empty;
+        }
+
         private void txtUid_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 btnOk.PerformClick();
+            } else
+            {
+                pasteCheck(sender, e);
+            }
+        }
+
+        private string cleanHexInput(string input)
+        {
+            // Entfernt alle Zeichen, die keine Hexadezimalzeichen sind
+            return new string(input.Where(c => "0123456789abcdefABCDEF".Contains(c)).ToArray());
+        }
+
+        private bool pasteCheck(object sender, KeyEventArgs e)
+        {
+            // Prüfen, ob STRG+V (Paste) gedrückt wurde
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                TextBox box = sender as TextBox;
+                if (box != null)
+                {
+                    // Clipboard-Text holen und filtern
+                    string paste = Clipboard.GetText();
+                    string filtered = cleanHexInput(paste);
+
+                    if (filtered.Length == 16)
+                    {
+                        if (filtered.StartsWith("E00403"))
+                        {
+                            // Einfügen in Textbox
+                            txtUid.Text = filtered;
+                            txtUid.SelectionStart = filtered.Length; // Cursor ans Ende setzen
+                            txtUid.SelectionLength = 0; // Keine Auswahl
+
+                            txtUidLE.Text = convertEndianToHex(filtered);
+                        }
+
+                        else if (filtered.EndsWith("0304E0"))
+                        {
+                            // Einfügen in Textbox
+                            txtUid.Text = convertEndianToHex(filtered);
+                            txtUid.SelectionStart = filtered.Length; // Cursor ans Ende setzen
+                            txtUid.SelectionLength = 0; // Keine Auswahl
+
+                            txtUidLE.Text = filtered;
+                        } else {
+                            MessageBox.Show("The UID must start with 'E00403'.", "Invalid UID", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        // Einfügen an Cursor-Position
+                        int selStart = box.SelectionStart;
+                        int selLength = box.SelectionLength;
+                        string orig = box.Text;
+                        string newText = orig.Substring(0, selStart) + filtered + orig.Substring(selStart + selLength);
+                        box.Text = newText;
+                        box.SelectionStart = selStart + filtered.Length;
+                        box.SelectionLength = 0;
+                    }
+                    e.SuppressKeyPress = true;
+                }
+                return true;
+            } else
+            {
+                return false;
             }
         }
 
@@ -133,8 +257,8 @@ namespace TeddyBench
             {
                 string selectedText = existingTonies.Items[existingTonies.SelectedIndex].ToString();
                 // UID aus eckigen Klammern extrahieren
-                int start = selectedText.IndexOf('[');
-                int end = selectedText.IndexOf(']');
+                int start = selectedText.LastIndexOf('[');
+                int end = selectedText.LastIndexOf(']');
                 if (start >= 0 && end > start)
                 {                    
                     txtUid.Text = selectedText.Substring(start + 1, end - start - 1).ToUpper();                    

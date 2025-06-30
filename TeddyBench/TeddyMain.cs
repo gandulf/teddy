@@ -1020,7 +1020,23 @@ namespace TeddyBench
                                 LogWindow.Log(LogWindow.eLogLevel.DebugVerbose, "     AudioId: " + tag.AudioId);
 
                                 bool live = tag.FileInfo.Attributes.HasFlag(FileAttributes.Hidden);
-                                string newText = (live ? "[live] " : "") +  tonieName;
+
+                                string newText;
+                                if (live) {
+                                    if (!tonieName.Contains("[live] "))
+                                    {
+                                        newText = "[live] "+ tonieName;
+                                    }
+                                    else
+                                    {
+                                        newText =  tonieName;
+                                    }                                    
+                                }
+                                else
+                                {
+                                    newText = tonieName.Replace("[live] ","");
+                                }
+
                                 string newImakeKey = image;
                                 string newToolTipText =
                                     "File:     " + tag.FileName + Environment.NewLine +
