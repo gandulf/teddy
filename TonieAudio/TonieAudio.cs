@@ -552,7 +552,17 @@ namespace TonieFile
                         {
                             cbr.FileFailed("Unknown file type");
                             continue;
+                        } else if (stream.Length == 0)
+                        {
+                            cbr.FileFailed("Input file is empty!");
+                            continue;
                         }
+                        else if (stream.Position >= stream.Length)
+                        {
+                            cbr.FileFailed("Input stream is at EOF!");
+                            continue;
+                        }
+                        
 
                         var streamResampled = new MediaFoundationResampler(stream, outFormat);
 
@@ -585,6 +595,11 @@ namespace TonieFile
                         }
                         stream.Close();
 
+                        if (totalBytesRead == 0)
+                        {                            
+                            throw new EncodingException("Unable to convert file to output format.");
+                        }
+
                         cbr.FileDone();
                     }
                     catch (OpusOggWriteStream.PaddingException e)
@@ -609,7 +624,7 @@ namespace TonieFile
                         string msg = "Failed processing " + sourceFile;
                         cbr.Failed(msg);
                         throw new Exception(msg);
-                    }
+                    }                    
 
                     if (!warned && outputData.Length >= maxSize / 2)
                     {
